@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # I woke up and decided to do a boring system info tool in bash
+# It is based on brokefetch's code and usues some code from cpuinfo and raminfo
 
 GREEN="\033[32m"
 RED="\033[31m"
@@ -1292,7 +1293,7 @@ for i in $(seq -w 1 15); do
 done
 
 # === OUTPUT ===
-line00="${BOLD_A}${COLOR}${ascii00}${RESET} $USER@$(hostname)"
+line00="${BOLD_A}${COLOR}${ascii00}${RESET}$USER@$(hostname)"
 line01="${BOLD_A}${COLOR}${ascii01}${RESET}-----------------------"
 line02="${BOLD_A}${COLOR}${ascii02}${BOLD}OS:${RESET} $OS_NAME"
 line03="${BOLD_A}${COLOR}${ascii03}${BOLD}Host:${RESET} $(hostname)"
