@@ -219,7 +219,7 @@ fi
 
 if [ -f /etc/os-release ]; then
     # linux
-    GPU_NAME="$(lspci | grep -iE 'VGA' | awk -F ': ' '{print $2}' | awk '{print $1}' | tr '[:upper:]' '[:lower:]')"
+    GPU_NAME="$(fastfetch | grep 'GPU: ' | awk -F: '{print $2}' | xargs)"
 elif grep -q Microsoft /proc/version 2>/dev/null; then
     # windows subsystem for linux
     GPU_NAME="WSL"
@@ -340,21 +340,6 @@ if [ -n "$TERM" ]; then
 else
     TERMINAL="$(echo "$TERM" | tr '[:upper:]' '[:lower:]')"
 fi
-
-####################################
-##### OUTPUT #######################
-
-# === FIXING LOGO IF NEEDED ===
-len=${#ascii00}
-
-for i in $(seq -w 1 15); do
-    var="ascii$i"
-    val="${!var}"
-
-    if [ -z "$val" ]; then
-        printf -v "$var" '%*s' "$len" ""
-    fi
-done
 
 # asciis
 
