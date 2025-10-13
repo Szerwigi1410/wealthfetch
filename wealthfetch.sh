@@ -35,13 +35,40 @@ fi
 # CONFIG
 CONFIG_FILE="$HOME/.config/wealthfetch/config"
 
-# If there is no config – create a default one.
-if [[ ! -f "$CONFIG_FILE" ]]; then
+function ConfigGenerator() {
     mkdir -p "$(dirname "$CONFIG_FILE")"
     echo -e "# Available COLOR_NAME options: RED, GREEN, BLUE, CYAN, WHITE, YELLOW, PURPLE, BLACK, GRAY and DISTRO" > "$CONFIG_FILE"
     echo -e "COLOR_NAME=DISTRO\n" >> "$CONFIG_FILE"
     echo -e "# Bold ascii logo? (true/fasle)" >> "$CONFIG_FILE"
     echo -e "ASCII_BOLD=false\n" >> "$CONFIG_FILE"
+    echo -e "# Color blocks" >> "$CONFIG_FILE"
+    echo -e "DISPLAY_COLORS_ROW1=true" >> "$CONFIG_FILE"
+    echo -e "DISPLAY_COLORS_ROW2=true\n" >> "$CONFIG_FILE"
+    echo -e "# Set the width of color blocks using spaces, example \"  \" " >> "$CONFIG_FILE"
+    echo -e "COLOR_BLOCK_WIDTH=\"   \"\n" >> "$CONFIG_FILE"
+    echo -e "# Set displayed system info lines" >> "$CONFIG_FILE"
+    echo -e "# Available INFOLINE options: user, line, os, host, kernel, uptime, packs, shell, resolution|res, de, wm, ws, term|terminal, cpu, gpu, mem\n" >> "$CONFIG_FILE"
+    echo -e "INFOLINE00=user\n" >> "$CONFIG_FILE"
+    echo -e "INFOLINE01=line\n" >> "$CONFIG_FILE"
+    echo -e "INFOLINE02=os\n" >> "$CONFIG_FILE"
+    echo -e "INFOLINE03=host\n" >> "$CONFIG_FILE"
+    echo -e "INFOLINE04=kernel\n" >> "$CONFIG_FILE"
+    echo -e "INFOLINE05=uptime\n" >> "$CONFIG_FILE"
+    echo -e "INFOLINE06=packs\n" >> "$CONFIG_FILE"
+    echo -e "INFOLINE07=shell\n" >> "$CONFIG_FILE"
+    echo -e "INFOLINE08=resolution\n" >> "$CONFIG_FILE"
+    echo -e "INFOLINE09=de\n" >> "$CONFIG_FILE"
+    echo -e "INFOLINE10=wm\n" >> "$CONFIG_FILE"
+    echo -e "INFOLINE11=ws\n" >> "$CONFIG_FILE"
+    echo -e "INFOLINE12=term\n" >> "$CONFIG_FILE"
+    echo -e "INFOLINE13=cpu\n" >> "$CONFIG_FILE"
+    echo -e "INFOLINE14=gpu\n" >> "$CONFIG_FILE"
+    echo -e "INFOLINE15=mem\n" >> "$CONFIG_FILE"    
+}
+
+# If there is no config – create a default one.
+if [[ ! -f "$CONFIG_FILE" ]]; then
+    ConfigGenerator
 fi
 
 # Load values from the config
@@ -219,7 +246,7 @@ fi
 
 if [ -f /etc/os-release ]; then
     # linux
-    GPU_NAME="$(fastfetch | grep 'GPU: ' | awk -F: '{print $2}' | xargs)"
+    GPU_NAME="$(lspci | grep -iE 'VGA' | awk -F ': ' '{print $2}')"
 elif grep -q Microsoft /proc/version 2>/dev/null; then
     # windows subsystem for linux
     GPU_NAME="WSL"
@@ -344,7 +371,7 @@ fi
 # asciis
 
 # Get options
-while getopts ":hva:lb" option; do
+while getopts ":hva:lbr" option; do
    case $option in
       h) # display Help
          echo "Help:"
@@ -355,7 +382,7 @@ while getopts ":hva:lb" option; do
          echo -e "The config file is located at ${BOLD}~/.config/wealthfetch/${RESET}"
          exit;;
       v) # display Version
-         echo "wealthfetch"
+         echo "wealthfetch based on brokefetch beta2"
          echo "Make sure to star the repository on GitHub :)"
          exit;;
       a) # Set ASCII override to what the user typed
@@ -377,7 +404,12 @@ while getopts ":hva:lb" option; do
         echo "⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⠀⠀⠀⠀⠀⠀⠀⠛⠛⠛⠛⠛⠛⠋⠉⠁⠀⠀⠀⠀⠘⠛⠀⠀⠀⠀⠀⠀⠀⠀⠙⠛⠃⠀⠀⠀⠀⠀⠉⠛⠛⠛⠛⠉⠁⠀⠀⠀⠀⠀⠘⠛⠀⠀⠀⠀⠀⠀⠀⠈⠛⠓⠀⠀⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠃⠀⠀⡾⠀⢰⠇⠀⠀⠀⠀⠀⠀⠹⡄⠀⠑⠲⠶⠶⠒⠒⡆⠀⠀⠀⠀⠘⣇⠀⠙⠲⠶⠖⢲⠀⠀⠀⠸⣄⠀⠙⠲⠶⠶⠒⢺⡆⠀⠀⡏⠀⢸⠁⠀⠀⠀⡇⠀⢸⠀⠀⠀⠀⠀"
         echo "⠀⠀⠀⠀⠀⠀⠀⠀⠘⠛⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠇⠀⣼⠀⠀⠀⠀⠀⠀⠀⠀⠈⠓⠲⠤⠤⠴⠶⠒⠃⠀⠀⠀⠀⠀⠈⠓⠶⠤⠤⠶⠚⠀⠀⠀⠀⠈⠑⠲⠦⠤⠴⠖⠚⠁⠀⠘⠳⠶⠋⠀⠀⠀⠘⠳⠶⠋⠀⠀⠀⠀⠀"
         echo "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⠤⠤⠤⠴⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-        exit;;           
+        exit;;
+      r)
+        echo -e "Resetting config"
+        echo -e "Run wealthfetch again to see the effect"
+        ConfigGenerator
+        ;;        
      \?) # Invalid option
          echo "Unkown option. Use -h for help."
          exit;;
@@ -412,10 +444,10 @@ case "$DISTRO_TO_DISPLAY" in
         ascii12="                                   "
         ascii13="                                   "
         ascii14="                                   "
-        ascii15=""
+        ascii15="                                   "
         ascii16="that's it"
-        ascii17=""
-        ascii18=""
+        ascii17="                                  "
+        ascii18="                                  "
         ascii19=""
     ;;
     "aeon")
@@ -436,8 +468,8 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="                       "
         ascii15="                       "
         ascii16=""
-        ascii17=""
-        ascii18=""
+        ascii17="                      "
+        ascii18="                      "
         ascii19=""
         ;;
     "alpine linux" | "alpine")
@@ -458,8 +490,8 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14=" \`yddddddddddddddddddddddddddddddddddy\`    "
         ascii15="  \`sdddddddddddddddddddddddddddddddds\`     "
         ascii16="    +dddddddddddddddddddddddddddddd+       "
-        ascii17="     /dddddddddddddddddddddddddddd/        "
-        ascii18="      :dddddddddddddddddddddddddd:         "
+        ascii17="     /dddddddddddddddddddddddddddd/       "
+        ascii18="      :dddddddddddddddddddddddddd:        "
         ascii19="       .hddddddddddddddddddddddh.          "
         ;;    
     "almalinux")
@@ -480,8 +512,8 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="        ${RED}o${WHITE}.   .                   .   .${RED}o    "
         ascii15="         ${RED}oo${WHITE}...........................${RED}oo   " 
         ascii16="          ${RED}ooooooooooooooooooooooooooooo                  "
-        ascii17="         I still don't know what this is.                      "
-        ascii18=""
+        ascii17="         I still don't know what this is. "
+        ascii18="                                          "
         ascii19=""
         ;;
     "amazon")
@@ -502,8 +534,8 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="                       "
         ascii15="                       "
         ascii16="                       "
-        ascii17="                       "
-        ascii18="                       "
+        ascii17="                      "
+        ascii18="                      "
         ascii19="                       "
         ;;
     "android")
@@ -522,10 +554,10 @@ case "$DISTRO_TO_DISPLAY" in
         ascii12="${GREEN}⠀⠀⠀⠀⠀⠀⣿⣿⣿⡇⠀⠀⢸⣿⣿⣿        "
         ascii13="${GREEN}⠀⠀⠀⠀⠀⠀⣿⣿⣿⡇⠀⠀⢸⣿⣿⣿        "
         ascii14="${GREEN}⠀⠀⠀⠀⠀⠀⠈⠉⠉⠀⠀⠀⠀⠉⠉⠁        "
-        ascii15="                                "
+        ascii15="${GREEN}                        "
         ascii16=""
-        ascii17=""
-        ascii18=""
+        ascii17="                       "
+        ascii18="                       "
         ascii19=""
         ;;
     "arch" | "arch linux")
@@ -568,8 +600,8 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="     'ooooxxxxxkxxoiiii:''     .i'             "
         ascii15="    'ooooxxxxxoi:::'a       ''ioxo'            "
         ascii16="   aooooxooi::aa         .:iiixkxxo'           "
-        ascii17="  aooooi:'a                a'';ioxxo'          "
-        ascii18=" ai:'a                          '':io'         "
+        ascii17="  aooooi:'a                a'';ioxxo'         "
+        ascii18=" ai:'a                          '':io'        "
         ascii19="systemd isn't that bad bruh replace your heart "
         ;;
     "aserdev")
@@ -577,7 +609,7 @@ case "$DISTRO_TO_DISPLAY" in
         ascii01="   / \  / ___|| ____|  _ \\     "
         ascii02="  / _ \ \___ \|  _| | |_) |     "
         ascii03=" / ___ \ ___) | |___|  _ <      "
-        ascii04="/_/   \_\____/|_____|_| \_\\    "
+        ascii04="/_/   \_\____/|_____|_| \_\\     "
         ascii05="                                "
         ascii06=" ____  _______     __           "
         ascii07="|  _ \| ____\ \   / /           "
@@ -612,8 +644,8 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="    ${BLUE}co${RED}so${YELLOW}o${GREEN}sl.s${CYAN}osl.l${BLUE}os.${RED}o${YELLOW}o.o${GREEN}s${CYAN}o..s${BLUE}o.${RED}s${YELLOW}o.s${GREEN}o..l${CYAN}s.${BLUE}osl.o${RED}s${YELLOW}osl..${GREEN}osl ${COLOR}   "
         ascii15="     ${COLOR}We were promised stability, not this...        "
         ascii16=""
-        ascii17=""
-        ascii18=""
+        ascii17="                                                                "
+        ascii18="                                                               "
         ascii19=""
         ;;
     "debian" | "debian gnu/linux")
@@ -634,8 +666,8 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="⣿⣿⣿⣿⣷⢠⠅⡌⢎⡓⡼⢫⠣⠁⠀⣐⡀⢤⣁⣿⣿⣿ "
         ascii15="                       "
         ascii16="How it feels having outdated packages?"
-        ascii17=""
-        ascii18=""
+        ascii17="                      "
+        ascii18="                      "
         ascii19=""
         ;;
     "elementary")
@@ -656,8 +688,8 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="      eeeeeee         eeeeeee          "
         ascii15="         eeeeeeeeeeeeeeeee             "
         ascii16="                                       "
-        ascii17="                                       "
-        ascii18="   can you even afford a macbook?      "
+        ascii17="                                      "
+        ascii18="   can you even afford a macbook?     "
         ascii19="                                       "
         ;;
     "endeavouros")
@@ -678,8 +710,8 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="  a:::::::::::::::::::::::::------aa               "
         ascii15="       go use arch bro,ru broke to see arch wiki   "
         ascii16=""
-        ascii17=""
-        ascii18=""
+        ascii17="                                                  "
+        ascii18="                                                  "
         ascii19=""
         ;;
     "fedora" | "fedora linux")
@@ -700,8 +732,8 @@ case "$DISTRO_TO_DISPLAY" in
 	    ascii14=":---${WHITE}:sdNMMMMNds:${COLOR}------------:        "
 	    ascii15=":------${WHITE}:://:${COLOR}-------------::          "
 	    ascii16=":---------------------://            "
-	    ascii17=""
-	    ascii18=""
+	    ascii17="                                    "
+	    ascii18="                                    "
 	    ascii19=""
         ;;
     "freebsd" | "paidbsd")
@@ -721,9 +753,9 @@ case "$DISTRO_TO_DISPLAY" in
     	ascii13="       ${COLOR}.--             ${COLOR}\`--.        "
     	ascii14="          ${COLOR}.---.....----.           "
     	ascii15="                                   "
-    	ascii16=""
-    	ascii17=""
-    	ascii18=""
+    	ascii16="Just tell me why not linux?"
+    	ascii17="I'm not hating, just asking        "
+    	ascii18="                                  "
     	ascii19=""
         ;;
     "garuda linux" | "garuda")
@@ -744,9 +776,9 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="    dxx8o                      .@@;.           "
         ascii15="      dx88                   .t@x.             "
         ascii16="        d:SS@8ba89aa67a853Sxxad.               "
-        ascii17="          .d988999889889899dd.                 "
-        ascii18=""
-        ascii19=""
+        ascii17="          .d988999889889899dd.                "
+        ascii18="Indian scammer who uses an arch-based disrto? "
+        ascii19="damn"
         ;; 
     "gentoo")
         ascii00="         ${PURPLE}-/oyddmdhs+:.                         "
@@ -755,7 +787,7 @@ case "$DISTRO_TO_DISPLAY" in
         ascii03=" ${PURPLE}dos2${COLOR}mMMMMMMMMMMMM${PURPLE}NmdmmmmdD${COLOR}hhy${PURPLE}s1/s             "
         ascii04=" ${PURPLE}oms2${COLOR}MMMMMMMMMMM${PURPLE}Ns1hhyyyos2h${COLOR}mddd${PURPLE}hhhds1oc       "
         ascii05="${PURPLE}.ys2d${COLOR}MMMMMMMMMM${PURPLE}ds1hs++so/ss2${COLOR}mdddhh${PURPLE}hhdms1+d     "
-        ascii06=" ${PURPLE}oys2hdm${COLOR}NMMMMMMMN${COLOR}s1dyooys2${COLOR}dmddddhh${PURPLE}hhyhNs1d.    "
+        ascii06=" ${PURPLE}oys2hdm${COLOR}NMMMMMMMN${PURPLE}s1dyooys2${COLOR}dmddddhh${PURPLE}hhyhNs1d.    "
         ascii07="  ${PURPLE}:os2yhhd${COLOR}NNMMMMMMMNNNmmdddhhhhhyyms${PURPLE}1Mh        "
         ascii08="    ${PURPLE}.:s2+syd${COLOR}NMMMMMNNNmmmdddhhhhhhm${PURPLE}Ms1my        "
         ascii09="       ${PURPLE}/ms2${COLOR}MMMMMMNNNmmmdddhhhhhmM${PURPLE}Nhs1s:        "
@@ -766,30 +798,30 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="${PURPLE}yMs2${COLOR}MNNNNNNNmmmmmNNM${PURPLE}mhs+/s1-s                  "
         ascii15="${PURPLE}/hs2${COLOR}MMNNNNNNNNMNdh${PURPLE}s++/s1-s                     "
         ascii16="${PURPLE}d/s2o${COLOR}hdmmdd${PURPLE}hys+++/:s1.s                        "
-        ascii17="  ${PURPLE}s-//////:--.                                 "
-        ascii18="              "
+        ascii17="  ${PURPLE}s-//////:--.                                "
+        ascii18="you spent 3 days compiling your kernel        "
         ascii19=""
         ;;
     "linuxlite")
         ascii00="          ,xXc             "
         ascii01="      .l0MMMMMO            "
-        ascii02="   .kNMMMMMS2WS1MMMN,      "
-        ascii03="   KMMMMMMS2KS1MMMMMMo     "
-        ascii04="  'MMMMMMNS2KS1MMMMMM:     "
-        ascii05="  kMMMMMMS2OS1MMMMMMO      "
-        ascii06="  MMMMMMS20S1XMMMMMW.      "
-        ascii07=" oMMMMMS2xS1MMMMMMM:       "
-        ascii08=" WMMMMMS2xS1MMMMMMO        "
-        ascii09=":MMMMMMS2OS1XMMMMW         "   
-        ascii10=".0MMMMMS2xS1MMMMM;         "
-        ascii11=":;cKMMWS2xS1MMMMO          "
-        ascii12="'MMWMMXS2OS1MMMMl          "
-        ascii13=" kMMMMKS2OS1MMMMMX:        "
-        ascii14=" .WMMMMKS2OS1WMMM0c        "
-        ascii15="  lMMMMMWS2OS1WMNd:'       "
-        ascii16="   oollXMKS2o1Xxl;.       "
-        ascii17="                           "
-        ascii18="isn't 'linux' lite enough? "
+        ascii02="   .kNMMMMM${WHITE}S2WS1${COLOR}MMMN,      "
+        ascii03="   KMMMMMM${WHITE}S2KS1${COLOR}MMMMMMo     "
+        ascii04="  'MMMMMMN${WHITE}S2KS1${COLOR}MMMMMM:     "
+        ascii05="  kMMMMMM${WHITE}S2OS1${COLOR}MMMMMMO      "
+        ascii06="  MMMMMM${WHITE}S20S1${COLOR}XMMMMMW.      "
+        ascii07=" oMMMMM${WHITE}S2xS1${COLOR}MMMMMMM:       "
+        ascii08=" WMMMMM${WHITE}S2xS1${COLOR}MMMMMMO        "
+        ascii09=":MMMMMM${WHITE}S2OS1${COLOR}XMMMMW         "   
+        ascii10=".0MMMMM${WHITE}S2xS1${COLOR}MMMMM;         "
+        ascii11=":;cKMMW${WHITE}S2xS1${COLOR}MMMMO          "
+        ascii12="'MMWMMX${WHITE}S2OS1${COLOR}MMMMl          "
+        ascii13=" kMMMMK${WHITE}S2OS1${COLOR}MMMMMX:        "
+        ascii14=" .WMMMMK${WHITE}S2OS1${COLOR}WMMM0c        "
+        ascii15="  lMMMMMWS${WHITE}2OS1${COLOR}WMNd:'       "
+        ascii16="   oollXMK${WHITE}S2o1${COLOR}Xxl;.       "
+        ascii17="                          "
+        ascii18="isn't 'linux' lite enough?"
         ascii19="                           "
         ;;
     "macos")
@@ -810,8 +842,8 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="    kMMMMMMMMMMMMMMMMMMMMMMd     "
         ascii15="     ;KMMMMMMMWXXWMMMMMMMk.      "
         ascii16="       .cooc,.    .,coo:.        "
-        ascii17=""
-        ascii18="How are your kidneys doing?"
+        ascii17="                                "
+        ascii18="How are your kidneys doing?     "
         ascii19="You still have both of them, right?"
         ;;
     "manjaro" | "manjaro linux")
@@ -832,12 +864,12 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="You cant say you use Arch btw  "
         ascii15="                               "
         ascii16=""
-        ascii17=""
-        ascii18=""
+        ascii17="                              "
+        ascii18="                              "
         ascii19=""
         ;;
     "linexin")
-        ascii00=" ⢀⣴⠿⠛⠛⠷⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⡾⠟⠛⠻⣦⡀"
+        ascii00="⢀⣴⠿⠛⠛⠷⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⡾⠟⠛⠻⣦⡀ "
         ascii01="⣼⠏⠀⠀⠀⠀⠈⠻⣦⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣴⠟⠁⠀⠀⠀⠀⠘⣧ "
         ascii02="⣿⠀⠀⠀⠀⠀⠀⠀⠈⠙⢷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣾⠟⠁⠀⠀⠀⠀⠀⠀⠀⣿ "
         ascii03="⣿⠀⠀⢀⡿⠛⠷⣦⡀⠀⠀⠙⢷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⡾⠏⠁⠀⠀⣠⠾⠛⢻⡄⠀⠀⣿ "
@@ -854,8 +886,8 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⠷⣤⣬⣿⡆⠀⠀⢾⡟⠷⠶⣦⣄⠀⠀⠀⠀⣠⣴⠶⠾⠟⣿⠀⠀⢰⣿⣥⣤⡶⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀ "
         ascii15="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⠀⠀⠀⢸⣇⠀⠀⠀⢻⣆⠀⠀⣰⡟⠁⠀⠀⣰⡇⠀⠀⠀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ "
         ascii16="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣻⣿⣿⣿⡶⢶⣽⣷⣤⣤⡾⣫⣶⢶⣝⢷⣤⣤⣶⣯⣶⢶⣟⣿⣿⣟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ "
-        ascii17="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠿⣿⣿⣿⣿⣍⣸⣧⣤⡶⠟⠋⠀⠀⠙⠻⢶⣤⣸⣇⣻⡿⣿⣿⣿⠿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ "
-        ascii18="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢿⡿⠿⠛⠛⢹⣿⣭⠥⠤⠤⠤⠤⠤⠤⠤⠤⠬⣭⣿⡏⠛⠛⠿⢿⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ "
+        ascii17="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠿⣿⣿⣿⣿⣍⣸⣧⣤⡶⠟⠋⠀⠀⠙⠻⢶⣤⣸⣇⣻⡿⣿⣿⣿⠿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
+        ascii18="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢿⡿⠿⠛⠛⢹⣿⣭⠥⠤⠤⠤⠤⠤⠤⠤⠤⠬⣭⣿⡏⠛⠛⠿⢿⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
         ascii19="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠙⠛⠻⠶⢦⣤⣤⡴⠶⠟⠛⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ "
         ;;
 
@@ -877,8 +909,8 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="${GREEN}⣿⣿⡆⠙⣿⣿⣿⡆⠖⢰⣶⣶⢊⣅⢭⣭⣭⣅⡨⢭⣭⡤⣴⣴⣶⡦⡰⣶⢢⣿⣿⣿⠟⣵⣿⣿   "
         ascii15="${GREEN}⣿⣿⣿⠀⠌⢻⣿⣿⣾⠸⣿⡇⣿⣿⣾⣿⣿⣿⣿⣆⢻⡇⣨⣉⠸⡿⣠⠏⣿⣿⡿⡋⣼⣿⣿⣿   "
         ascii16="${GREEN}⣿⣿⣿⡇⡟⣠⡙⠻⣿⡌⣿⢣⣿⣿⣿⣿⣿⣿⣿⣿⡸⢼⣿⣿⡐⡇⣿⣤⠿⠋⢴⢰⣿⣿⣿⣿   "
-        ascii17="${GREEN}⣿⣿⣿⡇⡇⣿⡇⠇⣬⣅⠻⠸⣿⣿⣿⣿⣿⣿⣿⣿⣷⣾⣿⣿⠇⠇⣫⣵⣾⣦⢸⢸⣿⣿⣿⣿   "
-        ascii18="${GREEN}⣿⣿⣿⣷⠁⣿⣧⣸⣿⣿⠉⣿⣶⣯⡉⣩⣟⣛⣛⣛⠉⡉⢍⣴⣆⠀⣿⣿⣿⣿⠀⢸⣿⣿⣿⣿   "
+        ascii17="${GREEN}⣿⣿⣿⡇⡇⣿⡇⠇⣬⣅⠻⠸⣿⣿⣿⣿⣿⣿⣿⣿⣷⣾⣿⣿⠇⠇⣫⣵⣾⣦⢸⢸⣿⣿⣿⣿  "
+        ascii18="${GREEN}⣿⣿⣿⣷⠁⣿⣧⣸⣿⣿⠉⣿⣶⣯⡉⣩⣟⣛⣛⣛⠉⡉⢍⣴⣆⠀⣿⣿⣿⣿⠀⢸⣿⣿⣿⣿  "
         ascii19="${GREEN}⣿⣿⣿⣿⢼⣿⣿⣿⣿⣿⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣾⣿⣾⣿⣿⣶⣿⣿⣿⣿⣤⣾⣿⣿⣿⣿   "
         ;;
     "nixos")
@@ -899,8 +931,8 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="                          "
         ascii15="                          "
         ascii16="                          "
-        ascii17="                          "
-        ascii18="                          "
+        ascii17="                         "
+        ascii18="                         "
         ascii19="                          "
         ;;
     "nobara")
@@ -921,30 +953,30 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠟⠛⠉⠉⠛⠛⢿⣿⣿⠀⠀⠀⠀⠀⠸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿"
         ascii15="⠘⢿⣿⣿⣿⣿⣿⣿⣿⡿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠈⢿⠀⠀⠀⠀⠀⠀⠙⢿⣿⣿⣿⣿⣿⣿⣿⠟⠁"
         ascii16="  ⠈⠙⠛⠛⠛⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠛⠛⠛⠉⠁"
-        ascii17=""
-        ascii18="So ur a gamer huh?"
+        ascii17="                                     "
+        ascii18="So ur a gamer huh?                   "
         ascii19=""
         ;;
     "opensuse tumbleweed" | "tumbleweed")
         ascii00="           ${WHITE}.;ldkO0000Okdl;.${COLOR}             "
-        ascii01="       ${WHITE}.;d00xl:^''''''^:ok00d;.${COLOR}        "
-        ascii02="     ${WHITE}.d00l'                'o00d.${COLOR}      "
-        ascii03="   ${WHITE}.d0Kd'  ${COLOR}Okxol:;,${CYAN}.${COLOR}          ${WHITE}:O0d${COLOR}     "
-        ascii04="  ${WHITE}.OK${COLOR}KKK0kOKKKKKKKKKKOxo:,      ${WHITE}lKO.${COLOR}   "
-        ascii05=" ${WHITE},0K${COLOR}KKKKKKKKKKKKKKK0P^${WHITE},,,${COLOR}^dx:    ${WHITE};00,${COLOR}  "
-        ascii06="${WHITE}.OK${COLOR}KKKKKKKKKKKKKKKk'${WHITE}.oOPPb.${COLOR}'0k.   ${WHITE}cKO.${COLOR} "
-        ascii07="${WHITE}:KK${COLOR}KKKKKKKKKKKKKKK: ${WHITE}kKx..dd${COLOR} lKd   ${WHITE}'OK:${COLOR} "
-        ascii08="${WHITE}dKK${COLOR}KKKKKKKKKOx0KKKd ${WHITE}^0KKKO'${COLOR} kKKc   ${WHITE}dKd${COLOR} "
-        ascii09="${WHITE}dKK${COLOR}KKKKKKKKKK;.;oOKx,..${WHITE}^${COLOR}..;kKKK0.  ${WHITE}dKd${COLOR} "
-        ascii10="${WHITE}:KK${COLOR}KKKKKKKKKK0o;...^cdxxOK0O/^^'  ${WHITE}.0K:${COLOR} "
+        ascii01="       ${WHITE}.;d00xl:^''''''^:ok00d;.${COLOR}         "
+        ascii02="     ${WHITE}.d00l'                'o00d.${COLOR}       "
+        ascii03="   ${WHITE}.d0Kd'  ${COLOR}Okxol:;,.${COLOR}          ${WHITE}:O0d${COLOR}      "
+        ascii04="  ${WHITE}.OK${COLOR}KKK0kOKKKKKKKKKKOxo:,      ${WHITE}lKO.${COLOR}    "
+        ascii05=" ${WHITE},0K${COLOR}KKKKKKKKKKKKKKK0P^${WHITE},,,${COLOR}^dx:    ${WHITE};00,${COLOR}   "
+        ascii06="${WHITE}.OK${COLOR}KKKKKKKKKKKKKKKk'${WHITE}.oOPPb.${COLOR}'0k.   ${WHITE}cKO.${COLOR}  "
+        ascii07="${WHITE}:KK${COLOR}KKKKKKKKKKKKKKK: ${WHITE}kKx..dd${COLOR} lKd   ${WHITE}'OK:${COLOR}  "
+        ascii08="${WHITE}dKK${COLOR}KKKKKKKKKOx0KKKd ${WHITE}^0KKKO'${COLOR} kKKc   ${WHITE}dKd${COLOR}  "
+        ascii09="${WHITE}dKK${COLOR}KKKKKKKKKK;.;oOKx,..${WHITE}^${COLOR}..;kKKK0.  ${WHITE}dKd${COLOR}  "
+        ascii10="${WHITE}:KK${COLOR}KKKKKKKKKK0o;...^cdxxOK0O/^^'  ${WHITE}.0K:${COLOR}  "
         ascii11="${WHITE}kKK${COLOR}KKKKKKKKKKKKK0x;,,......,;od   ${WHITE}lKk${COLOR}   "
         ascii12="${WHITE}'0K${COLOR}KKKKKKKKKKKKKKKKKKKK00KKOo^   ${WHITE}c00'${COLOR}   "
-        ascii13="  ${WHITE}'kK${COLOR}KKOxddxkOO00000Okxoc;''   ${WHITE}.dKk'${COLOR}   "
-        ascii14="    ${WHITE}l0Ko.                    .c00l'${COLOR}    "
-        ascii15="     ${WHITE}'l0Kk:.              .;xK0l'  "
+        ascii13="  ${WHITE}'kK${COLOR}KKOxddxkOO00000Okxoc;''   ${WHITE}.dKk'${COLOR}    "
+        ascii14="    ${WHITE}l0Ko.                    .c00l'${COLOR}     "
+        ascii15="     ${WHITE}'l0Kk:.              .;xK0l'  ${COLOR}     "
         ascii16="        ${WHITE}'lkK0xl:;,,,,;:ldO0kl' "
-        ascii17="            ${WHITE}'^:ldxkkkkxdl:^'    "
-        ascii18=""
+        ascii17="            ${WHITE}'^:ldxkkkkxdl:^'           "
+        ascii18="                                       "
         ascii19=""
         ;;
     "opensuse leap" | "leap")
@@ -965,8 +997,8 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="     ====+    ====         "
         ascii15="       ==== =====          "
         ascii16="         ======            "
-        ascii17="           ==              "
-        ascii18=""
+        ascii17="           ==             "
+        ascii18="                          "
         ascii19=""
         ;;            
     "pop!_os" | "popos")
@@ -987,31 +1019,31 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ "
         ascii15="                               "
         ascii16=""
-        ascii17=""
-        ascii18=""
+        ascii17="                              "
+        ascii18="                              "
         ascii19=""
         ;;
     "kali linux" | "kali")
-        ascii00="..............                                  "
-        ascii01="            ..,;:ccc,.                          "
-        ascii02="          ......''';lxO.                        "
-        ascii03=".....''''..........,:ld;                        "
-        ascii04="           .';;;:::;,,.x,                       "
-        ascii05="      ..'''.            0Xxoc:,.  ...           "
-        ascii06="  ....                ,ONkc;,;cokOdc',.         "
-        ascii07=" .                   OMo           ':${GRAY}dd${COLOR}o.       "
-        ascii08="                    dMc               :OO;      "
-        ascii09="                    0M.                 .:o.    "
-        ascii10="                    ;Wd                         "
-        ascii11="                     ;XO,                       "
-        ascii12="                       ,d0Odlc;,..              "
-        ascii13="                           ..',;:cdOOd::,.      "
-        ascii14="                                    .:d;.':;.   "
-        ascii15="                                       'd,  .'  "
-        ascii16="                                         ;l   .."
+        ascii00="..............                                   "
+        ascii01="            ..,;:ccc,.                           "
+        ascii02="          ......''';lxO.                         "
+        ascii03=".....''''..........,:ld;                         "
+        ascii04="           .';;;:::;,,.x,                        "
+        ascii05="      ..'''.            0Xxoc:,.  ...            "
+        ascii06="  ....                ,ONkc;,;cokOdc',.          "
+        ascii07=" .                   OMo           ':${GRAY}dd${COLOR}o.        "
+        ascii08="                    dMc               :OO;       "
+        ascii09="                    0M.                 .:o.     "
+        ascii10="                    ;Wd                          "
+        ascii11="                     ;XO,                        "
+        ascii12="                       ,d0Odlc;,..               "
+        ascii13="                           ..',;:cdOOd::,.       "
+        ascii14="                                    .:d;.':;.    "
+        ascii15="                                       'd,  .'   "
+        ascii16="                                         ;l   .. "
         ascii17="                                          .o    "
         ascii18="                                            c   "
-        ascii19="                                            .'  " 
+        ascii19="                                            .'   " 
         ;;    
     "rhel")
         ascii00="           .MMM..:MMMMMMM                  "
@@ -1031,8 +1063,8 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="               ''MMMMMMMMMMMMMMMMM'        "
         ascii15="      this is a scam go buy a mac          "
         ascii16="                                           "
-        ascii17="                                           "
-        ascii18="                                           "
+        ascii17="                                          "
+        ascii18="                                          "
         ascii19="                                           "
         ;;
     "rockylinux" | "rocky linux")
@@ -1053,8 +1085,8 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="                                                  "
         ascii15="                                                  "
         ascii16="                                                  "
-        ascii17="                                                  "
-        ascii18="                                                  "
+        ascii17="                                                 "
+        ascii18="                                                 "
         ascii19="                                                  "
         ;;
     "slackware" | "old ahh linux")
@@ -1075,12 +1107,12 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="  ::::${WHITE}ocl${COLOR}:${WHITE}ccslclccclclccclclc${COLOR}:::::::::::::     "
         ascii15="   :::${WHITE}oclcccccccccccccllllllllllllll${COLOR}:::::      "
         ascii16="      ::::::::::::::::::::::::::::::::        "
-        ascii17="         ::::::::::::::::::::::::::::  "
-        ascii18="           ::::::::::::::::::::::       "
-        ascii19="${BLUE}     BOOMER i bet your pc is from the 90s              "
+        ascii17="         ::::::::::::::::::::::::::::         "
+        ascii18="           ::::::::::::::::::::::             "
+        ascii19="${COLOR}     BOOMER i bet your pc is from the 90s              "
         ;;
     "solus")
-        ascii00="         ...........        "       
+        ascii00="         ...........           "       
 	    ascii01="⠀⠀⠀⠀⠀⠀⢀⣤⣾⡿⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⣀⠀⠀⠀⠀⠀ ⠀⠀"
 	    ascii02="⠀⠀⠀⠀⣠⣾⣿⣿⣿⠃⠀⠹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣄⠀⠀⠀ ⠀⠀"
 	    ascii03="⠀⠀⢀⣾⣿⣿⣿⣿⠏⠀⠀⠀⠘⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡄⠀⠀ ⠀"
@@ -1096,10 +1128,10 @@ case "$DISTRO_TO_DISPLAY" in
 	    ascii12="⠀⠀⠀⠀⠀⠁⠠⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠄⠊⠀⠀⠀⠀⠀ ⠀"
 	    ascii13="⠀⠀⠀⠀⠀⠀⠀⠀⠉⠒⠠⠤⢀⢀⣀⡀⠀⠤⠄⠒⠈⠀⠀⠀⠀⠀⠀⠀ ⠀⠀"
  	    ascii14="                               "
-        ascii15="I'm all alone on this distro.    "
+        ascii15="I'm all alone on this distro.  "
         ascii16=""
-      	ascii17=""
-    	ascii18=""
+      	ascii17="                              "
+    	ascii18="                              "
      	ascii19=""
         ;;
     "ubuntu" | "kubuntu" | "lubuntu" | "xubuntu" | "ubuntustudio" | "ubuntu mate" | "ubuntu budgie")
@@ -1120,8 +1152,8 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="  +sssssssss${WHITE}dm${COLOR}yd${WHITE}MMMMMMMMddddy${COLOR}ssssssss+     "
         ascii15="   /sssssssssss${WHITE}hdmNNNNmyNMMMMh${COLOR}ssssss/      "
         ascii16="    .ossssssssssssssssss${WHITE}dMMMNy${COLOR}sssso.       "
-        ascii17="      -+sssssssssssssssss${WHITE}yyy${COLOR}ssss+-         "
-        ascii18="        \`:+ssssssssssssssssss+:\`           "
+        ascii17="      -+sssssssssssssssss${WHITE}yyy${COLOR}ssss+-        "
+        ascii18="        \`:+ssssssssssssssssss+:\`          "
         ascii19="            .-/+oossssoo+/-.               "
         ;;
     "void linux" | "void")
@@ -1142,14 +1174,14 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="        -Invnvvnsi..___..=sv=.     .             "
         ascii15="          +Invnvnvnnnnnnnnvvnn.                  "
         ascii16="           ~|Invnvnvvnvvvnnv}+                  "
-        ascii17="               -~|{*l}*|~%                       "
-        ascii18="                                                 "
+        ascii17="               -~|{*l}*|~%                      "
+        ascii18="                                                "
         ascii19=""
         ;;
     "windows" | wsl)
         win_rand=$(($RANDOM%3))
         case $win_rand in
-            0)WIN="You are not getting the newer logo";;
+            0)WIN="You are not getting the newer logo       ";;
             1)WIN="Still using Windows in $(date +%Y)? Lowkey crazy";;
             2)WIN="Check your ram and cpu usage HAHAHAHAHAHA";;
         esac
@@ -1171,7 +1203,7 @@ case "$DISTRO_TO_DISPLAY" in
 	    ascii15="                 \"VEzjt:;;z>*\`         "
 	    ascii16=""
 	    ascii17="${WIN}"
-	    ascii18=""
+	    ascii18="                                         "
 	    ascii19=""
         ;;
     "zorin")
@@ -1192,8 +1224,8 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="                                           "
         ascii15="                                           "
         ascii16="    if linux replaced macbooks             "
-        ascii17="                                           "
-        ascii18="                                           "
+        ascii17="                                          "
+        ascii18="                                          "
         ascii19="                                           "
         ;;
     "thinkpad")
@@ -1214,8 +1246,8 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="${COLOR}                                                                          "
         ascii15="${COLOR}                                                                          "
         ascii16="${COLOR}                                                                          "
-        ascii17="${COLOR}                                                                          "
-        ascii18="${COLOR}                                                                          "
+        ascii17="${COLOR}                                                                         "
+        ascii18="${COLOR}                                                                         "
         ascii19="You found an easter egg!"
         ;;    
     "thinkpad2")                                                                                                                                
@@ -1239,7 +1271,7 @@ case "$DISTRO_TO_DISPLAY" in
         ascii17=""
         ascii18=""
         ascii19="" #finish later         
-        ;;        
+        ;;
     *)
         # Default ASCII art for unknown distros
         ascii00="${YELLOW}        S2#####                    "
@@ -1259,11 +1291,348 @@ case "$DISTRO_TO_DISPLAY" in
         ascii14="${YELLOW}   wth are you using this for?     "
         ascii15="${YELLOW}                                   "
         ascii16="${YELLOW}                                   "
-        ascii17="${YELLOW}                                   "
-        ascii18="${YELLOW}                                   "
+        ascii17="${YELLOW}                                  "
+        ascii18="${YELLOW}                                  "
         ascii19="${YELLOW}                                   "
         ;;
 esac
+# === Info Lines ===================================================
+
+case "$INFOLINE00" in
+    "user") info00="$USER@$(hostname)";;
+    "line") info00="-----------------------";;
+    "os") info00="OS:${RESET} $OS_NAME";;
+    "host") info00="Host:${RESET} $(hostname)";;
+    "kernel") info00="Kernel:${RESET} $KERNEL_NAME";;
+    "uptime") info00="Uptime:${RESET} $UPTIME";;
+    "packs" | "packages") info00="Packages:${RESET} $PKG_COUNT";;
+    "shell") info00="Shell:${RESET} $SHELL_NAME";;
+    "resolution") info00="Resolution:${RESET} $MONITOR_RES";;
+    "de" | "desktop_enviroment") info00="DE:${RESET} $DESKTOP_ENV";;
+    "wm" | "window_manager") info00="WM:${RESET} $WINDOW_MANAGER";;
+    "ws" | "window_system") info00="Window system:${RESET} $WINDOW_SYSTEM";;
+    "term" | "terminal") info00="Terminal:${RESET} $TERMINAL";;
+    "cpu" | "processor") info00="CPU:${RESET} $CPU_NAME";;
+    "gpu" | "video_card") info00="GPU:${RESET} $GPU_NAME";;
+    "mem" | "memory" | "ram") info00="Memory:${RESET} ${totram_GB}GB";;
+    "empty") info00="";;
+    *) info00="$INFOLINE00";;
+esac    
+
+case "$INFOLINE01" in
+    "user") info01="$USER@$(hostname)";;
+    "line") info01="-----------------------";;
+    "os") info01="OS:${RESET} $OS_NAME";;
+    "host") info01="Host:${RESET} $(hostname)";;
+    "kernel") info01="Kernel:${RESET} $KERNEL_NAME";;
+    "uptime") info01="Uptime:${RESET} $UPTIME";;
+    "packs" | "packages") info01="Packages:${RESET} $PKG_COUNT";;
+    "shell") info01="Shell:${RESET} $SHELL_NAME";;
+    "resolution") info01="Resolution:${RESET} $MONITOR_RES";;
+    "de" | "desktop_enviroment") info01="DE:${RESET} $DESKTOP_ENV";;
+    "wm" | "window_manager") info01="WM:${RESET} $WINDOW_MANAGER";;
+    "ws" | "window_system") info01="Window system:${RESET} $WINDOW_SYSTEM";;
+    "term" | "terminal") info01="Terminal:${RESET} $TERMINAL";;
+    "cpu" | "processor") info01="CPU:${RESET} $CPU_NAME";;
+    "gpu" | "video_card") info01="GPU:${RESET} $GPU_NAME";;
+    "mem" | "memory" | "ram") info01="Memory:${RESET} ${totram_GB}GB";;
+    "empty") info01="";;
+    *) info01="$INFOLINE01";;
+esac    
+
+case "$INFOLINE02" in
+    "user") info02="$USER@$(hostname)";;
+    "line") info02="-----------------------";;
+    "os") info02="OS:${RESET} $OS_NAME";;
+    "host") info02="Host:${RESET} $(hostname)";;
+    "kernel") info02="Kernel:${RESET} $KERNEL_NAME";;
+    "uptime") info02="Uptime:${RESET} $UPTIME";;
+    "packs" | "packages") info02="Packages:${RESET} $PKG_COUNT";;
+    "shell") info02="Shell:${RESET} $SHELL_NAME";;
+    "resolution") info02="Resolution:${RESET} $MONITOR_RES";;
+    "de" | "desktop_enviroment") info02="DE:${RESET} $DESKTOP_ENV";;
+    "wm" | "window_manager") info02="WM:${RESET} $WINDOW_MANAGER";;
+    "ws" | "window_system") info02="Window system:${RESET} $WINDOW_SYSTEM";;
+    "term" | "terminal") info02="Terminal:${RESET} $TERMINAL";;
+    "cpu" | "processor") info02="CPU:${RESET} $CPU_NAME";;
+    "gpu" | "video_card") info02="GPU:${RESET} $GPU_NAME";;
+    "mem" | "memory" | "ram") info02="Memory:${RESET} ${totram_GB}GB";;
+    "empty") info02="";;
+    *) info02="$INFOLINE02";;
+esac    
+
+case "$INFOLINE03" in
+    "user") info03="$USER@$(hostname)";;
+    "line") info03="-----------------------";;
+    "os") info03="OS:${RESET} $OS_NAME";;
+    "host") info03="Host:${RESET} $(hostname)";;
+    "kernel") info03="Kernel:${RESET} $KERNEL_NAME";;
+    "uptime") info03="Uptime:${RESET} $UPTIME";;
+    "packs" | "packages") info03="Packages:${RESET} $PKG_COUNT";;
+    "shell") info03="Shell:${RESET} $SHELL_NAME";;
+    "resolution") info03="Resolution:${RESET} $MONITOR_RES";;
+    "de" | "desktop_enviroment") info03="DE:${RESET} $DESKTOP_ENV";;
+    "wm" | "window_manager") info03="WM:${RESET} $WINDOW_MANAGER";;
+    "ws" | "window_system") info03="Window system:${RESET} $WINDOW_SYSTEM";;
+    "term" | "terminal") info03="Terminal:${RESET} $TERMINAL";;
+    "cpu" | "processor") info03="CPU:${RESET} $CPU_NAME";;
+    "gpu" | "video_card") info03="GPU:${RESET} $GPU_NAME";;
+    "mem" | "memory" | "ram") info03="Memory:${RESET} ${totram_GB}GB";;
+    "empty") info03="";;
+    *) info03="$INFOLINE03";;
+esac    
+
+case "$INFOLINE04" in
+    "user") info04="$USER@$(hostname)";;
+    "line") info04="-----------------------";;
+    "os") info04="OS:${RESET} $OS_NAME";;
+    "host") info04="Host:${RESET} $(hostname)";;
+    "kernel") info04="Kernel:${RESET} $KERNEL_NAME";;
+    "uptime") info04="Uptime:${RESET} $UPTIME";;
+    "packs" | "packages") info04="Packages:${RESET} $PKG_COUNT";;
+    "shell") info04="Shell:${RESET} $SHELL_NAME";;
+    "resolution") info04="Resolution:${RESET} $MONITOR_RES";;
+    "de" | "desktop_enviroment") info04="DE:${RESET} $DESKTOP_ENV";;
+    "wm" | "window_manager") info04="WM:${RESET} $WINDOW_MANAGER";;
+    "ws" | "window_system") info04="Window system:${RESET} $WINDOW_SYSTEM";;
+    "term" | "terminal") info04="Terminal:${RESET} $TERMINAL";;
+    "cpu" | "processor") info04="CPU:${RESET} $CPU_NAME";;
+    "gpu" | "video_card") info04="GPU:${RESET} $GPU_NAME";;
+    "mem" | "memory" | "ram") info04="Memory:${RESET} ${totram_GB}GB";;
+    "empty") info04="";;
+    *) info04="$INFOLINE04";;
+esac    
+
+case "$INFOLINE05" in
+    "user") info05="$USER@$(hostname)";;
+    "line") info05="-----------------------";;
+    "os") info05="OS:${RESET} $OS_NAME";;
+    "host") info05="Host:${RESET} $(hostname)";;
+    "kernel") info05="Kernel:${RESET} $KERNEL_NAME";;
+    "uptime") info05="Uptime:${RESET} $UPTIME";;
+    "packs" | "packages") info05="Packages:${RESET} $PKG_COUNT";;
+    "shell") info05="Shell:${RESET} $SHELL_NAME";;
+    "resolution") info05="Resolution:${RESET} $MONITOR_RES";;
+    "de" | "desktop_enviroment") info05="DE:${RESET} $DESKTOP_ENV";;
+    "wm" | "window_manager") info05="WM:${RESET} $WINDOW_MANAGER";;
+    "ws" | "window_system") info05="Window system:${RESET} $WINDOW_SYSTEM";;
+    "term" | "terminal") info05="Terminal:${RESET} $TERMINAL";;
+    "cpu" | "processor") info05="CPU:${RESET} $CPU_NAME";;
+    "gpu" | "video_card") info05="GPU:${RESET} $GPU_NAME";;
+    "mem" | "memory" | "ram") info05="Memory:${RESET} ${totram_GB}GB";;
+    "empty") info05="";;
+    *) info05="$INFOLINE05";;
+esac    
+
+case "$INFOLINE06" in
+    "user") info06="$USER@$(hostname)";;
+    "line") info06="-----------------------";;
+    "os") info06="OS:${RESET} $OS_NAME";;
+    "host") info06="Host:${RESET} $(hostname)";;
+    "kernel") info06="Kernel:${RESET} $KERNEL_NAME";;
+    "uptime") info06="Uptime:${RESET} $UPTIME";;
+    "packs" | "packages") info06="Packages:${RESET} $PKG_COUNT";;
+    "shell") info06="Shell:${RESET} $SHELL_NAME";;
+    "resolution") info06="Resolution:${RESET} $MONITOR_RES";;
+    "de" | "desktop_enviroment") info06="DE:${RESET} $DESKTOP_ENV";;
+    "wm" | "window_manager") info06="WM:${RESET} $WINDOW_MANAGER";;
+    "ws" | "window_system") info06="Window system:${RESET} $WINDOW_SYSTEM";;
+    "term" | "terminal") info06="Terminal:${RESET} $TERMINAL";;
+    "cpu" | "processor") info06="CPU:${RESET} $CPU_NAME";;
+    "gpu" | "video_card") info06="GPU:${RESET} $GPU_NAME";;
+    "mem" | "memory" | "ram") info06="Memory:${RESET} ${totram_GB}GB";;
+    "empty") info06="";;
+    *) info06="$INFOLINE06";;
+esac    
+
+case "$INFOLINE07" in
+    "user") info07="$USER@$(hostname)";;
+    "line") info07="-----------------------";;
+    "os") info07="OS:${RESET} $OS_NAME";;
+    "host") info07="Host:${RESET} $(hostname)";;
+    "kernel") info07="Kernel:${RESET} $KERNEL_NAME";;
+    "uptime") info07="Uptime:${RESET} $UPTIME";;
+    "packs" | "packages") info07="Packages:${RESET} $PKG_COUNT";;
+    "shell") info07="Shell:${RESET} $SHELL_NAME";;
+    "resolution") info07="Resolution:${RESET} $MONITOR_RES";;
+    "de" | "desktop_enviroment") info07="DE:${RESET} $DESKTOP_ENV";;
+    "wm" | "window_manager") info07="WM:${RESET} $WINDOW_MANAGER";;
+    "ws" | "window_system") info07="Window system:${RESET} $WINDOW_SYSTEM";;
+    "term" | "terminal") info07="Terminal:${RESET} $TERMINAL";;
+    "cpu" | "processor") info07="CPU:${RESET} $CPU_NAME";;
+    "gpu" | "video_card") info07="GPU:${RESET} $GPU_NAME";;
+    "mem" | "memory" | "ram") info07="Memory:${RESET} ${totram_GB}GB";;
+    "empty") info07="";;
+    *) info07="$INFOLINE07";;
+esac    
+
+case "$INFOLINE08" in
+    "user") info08="$USER@$(hostname)";;
+    "line") info08="-----------------------";;
+    "os") info08="OS:${RESET} $OS_NAME";;
+    "host") info08="Host:${RESET} $(hostname)";;
+    "kernel") info08="Kernel:${RESET} $KERNEL_NAME";;
+    "uptime") info08="Uptime:${RESET} $UPTIME";;
+    "packs" | "packages") info08="Packages:${RESET} $PKG_COUNT";;
+    "shell") info08="Shell:${RESET} $SHELL_NAME";;
+    "resolution") info08="Resolution:${RESET} $MONITOR_RES";;
+    "de" | "desktop_enviroment") info08="DE:${RESET} $DESKTOP_ENV";;
+    "wm" | "window_manager") info08="WM:${RESET} $WINDOW_MANAGER";;
+    "ws" | "window_system") info08="Window system:${RESET} $WINDOW_SYSTEM";;
+    "term" | "terminal") info08="Terminal:${RESET} $TERMINAL";;
+    "cpu" | "processor") info08="CPU:${RESET} $CPU_NAME";;
+    "gpu" | "video_card") info08="GPU:${RESET} $GPU_NAME";;
+    "mem" | "memory" | "ram") info08="Memory:${RESET} ${totram_GB}GB";;
+    "empty") info08="";;
+    *) info08="$INFOLINE08";;
+esac    
+
+case "$INFOLINE09" in
+    "user") info09="$USER@$(hostname)";;
+    "line") info09="-----------------------";;
+    "os") info09="OS:${RESET} $OS_NAME";;
+    "host") info09="Host:${RESET} $(hostname)";;
+    "kernel") info09="Kernel:${RESET} $KERNEL_NAME";;
+    "uptime") info09="Uptime:${RESET} $UPTIME";;
+    "packs" | "packages") info09="Packages:${RESET} $PKG_COUNT";;
+    "shell") info09="Shell:${RESET} $SHELL_NAME";;
+    "resolution") info09="Resolution:${RESET} $MONITOR_RES";;
+    "de" | "desktop_enviroment") info09="DE:${RESET} $DESKTOP_ENV";;
+    "wm" | "window_manager") info09="WM:${RESET} $WINDOW_MANAGER";;
+    "ws" | "window_system") info09="Window system:${RESET} $WINDOW_SYSTEM";;
+    "term" | "terminal") info09="Terminal:${RESET} $TERMINAL";;
+    "cpu" | "processor") info09="CPU:${RESET} $CPU_NAME";;
+    "gpu" | "video_card") info09="GPU:${RESET} $GPU_NAME";;
+    "mem" | "memory" | "ram") info09="Memory:${RESET} ${totram_GB}GB";;
+    "empty") info09="";;
+    *) info09="$INFOLINE09";;
+esac    
+
+case "$INFOLINE10" in
+    "user") info10="$USER@$(hostname)";;
+    "line") info10="-----------------------";;
+    "os") info10="OS:${RESET} $OS_NAME";;
+    "host") info10="Host:${RESET} $(hostname)";;
+    "kernel") info10="Kernel:${RESET} $KERNEL_NAME";;
+    "uptime") info10="Uptime:${RESET} $UPTIME";;
+    "packs" | "packages") info10="Packages:${RESET} $PKG_COUNT";;
+    "shell") info10="Shell:${RESET} $SHELL_NAME";;
+    "resolution") info10="Resolution:${RESET} $MONITOR_RES";;
+    "de" | "desktop_enviroment") info10="DE:${RESET} $DESKTOP_ENV";;
+    "wm" | "window_manager") info10="WM:${RESET} $WINDOW_MANAGER";;
+    "ws" | "window_system") info10="Window system:${RESET} $WINDOW_SYSTEM";;
+    "term" | "terminal") info10="Terminal:${RESET} $TERMINAL";;
+    "cpu" | "processor") info10="CPU:${RESET} $CPU_NAME";;
+    "gpu" | "video_card") info10="GPU:${RESET} $GPU_NAME";;
+    "mem" | "memory" | "ram") info10="Memory:${RESET} ${totram_GB}GB";;
+    "empty") info10="";;
+    *) info10="$INFOLINE10";;
+esac    
+
+case "$INFOLINE11" in
+    "user") info11="$USER@$(hostname)";;
+    "line") info11="-----------------------";;
+    "os") info11="OS:${RESET} $OS_NAME";;
+    "host") info11="Host:${RESET} $(hostname)";;
+    "kernel") info11="Kernel:${RESET} $KERNEL_NAME";;
+    "uptime") info11="Uptime:${RESET} $UPTIME";;
+    "packs" | "packages") info11="Packages:${RESET} $PKG_COUNT";;
+    "shell") info11="Shell:${RESET} $SHELL_NAME";;
+    "resolution") info11="Resolution:${RESET} $MONITOR_RES";;
+    "de" | "desktop_enviroment") info11="DE:${RESET} $DESKTOP_ENV";;
+    "wm" | "window_manager") info11="WM:${RESET} $WINDOW_MANAGER";;
+    "ws" | "window_system") info11="Window system:${RESET} $WINDOW_SYSTEM";;
+    "term" | "terminal") info11="Terminal:${RESET} $TERMINAL";;
+    "cpu" | "processor") info11="CPU:${RESET} $CPU_NAME";;
+    "gpu" | "video_card") info11="GPU:${RESET} $GPU_NAME";;
+    "mem" | "memory" | "ram") info11="Memory:${RESET} ${totram_GB}GB";;
+    "empty") info11="";;
+    *) info11="$INFOLINE11";;
+esac    
+
+case "$INFOLINE12" in
+    "user") info12="$USER@$(hostname)";;
+    "line") info12="-----------------------";;
+    "os") info12="OS:${RESET} $OS_NAME";;
+    "host") info12="Host:${RESET} $(hostname)";;
+    "kernel") info12="Kernel:${RESET} $KERNEL_NAME";;
+    "uptime") info12="Uptime:${RESET} $UPTIME";;
+    "packs" | "packages") info12="Packages:${RESET} $PKG_COUNT";;
+    "shell") info12="Shell:${RESET} $SHELL_NAME";;
+    "resolution") info12="Resolution:${RESET} $MONITOR_RES";;
+    "de" | "desktop_enviroment") info12="DE:${RESET} $DESKTOP_ENV";;
+    "wm" | "window_manager") info12="WM:${RESET} $WINDOW_MANAGER";;
+    "ws" | "window_system") info12="Window system:${RESET} $WINDOW_SYSTEM";;
+    "term" | "terminal") info12="Terminal:${RESET} $TERMINAL";;
+    "cpu" | "processor") info12="CPU:${RESET} $CPU_NAME";;
+    "gpu" | "video_card") info12="GPU:${RESET} $GPU_NAME";;
+    "mem" | "memory" | "ram") info12="Memory:${RESET} ${totram_GB}GB";;
+    "empty") info12="";;
+    *) info12="$INFOLINE12";;
+esac    
+
+case "$INFOLINE13" in
+    "user") info13="$USER@$(hostname)";;
+    "line") info13="-----------------------";;
+    "os") info13="OS:${RESET} $OS_NAME";;
+    "host") info13="Host:${RESET} $(hostname)";;
+    "kernel") info13="Kernel:${RESET} $KERNEL_NAME";;
+    "uptime") info13="Uptime:${RESET} $UPTIME";;
+    "packs" | "packages") info13="Packages:${RESET} $PKG_COUNT";;
+    "shell") info13="Shell:${RESET} $SHELL_NAME";;
+    "resolution") info13="Resolution:${RESET} $MONITOR_RES";;
+    "de" | "desktop_enviroment") info13="DE:${RESET} $DESKTOP_ENV";;
+    "wm" | "window_manager") info13="WM:${RESET} $WINDOW_MANAGER";;
+    "ws" | "window_system") info13="Window system:${RESET} $WINDOW_SYSTEM";;
+    "term" | "terminal") info13="Terminal:${RESET} $TERMINAL";;
+    "cpu" | "processor") info13="CPU:${RESET} $CPU_NAME";;
+    "gpu" | "video_card") info13="GPU:${RESET} $GPU_NAME";;
+    "mem" | "memory" | "ram") info13="Memory:${RESET} ${totram_GB}GB";;
+    "empty") info13="";;
+    *) info13="$INFOLINE13";;
+esac    
+
+case "$INFOLINE14" in
+    "user") info14="$USER@$(hostname)";;
+    "line") info14="-----------------------";;
+    "os") info14="OS:${RESET} $OS_NAME";;
+    "host") info14="Host:${RESET} $(hostname)";;
+    "kernel") info14="Kernel:${RESET} $KERNEL_NAME";;
+    "uptime") info14="Uptime:${RESET} $UPTIME";;
+    "packs" | "packages") info14="Packages:${RESET} $PKG_COUNT";;
+    "shell") info14="Shell:${RESET} $SHELL_NAME";;
+    "resolution") info14="Resolution:${RESET} $MONITOR_RES";;
+    "de" | "desktop_enviroment") info14="DE:${RESET} $DESKTOP_ENV";;
+    "wm" | "window_manager") info14="WM:${RESET} $WINDOW_MANAGER";;
+    "ws" | "window_system") info14="Window system:${RESET} $WINDOW_SYSTEM";;
+    "term" | "terminal") info14="Terminal:${RESET} $TERMINAL";;
+    "cpu" | "processor") info14="CPU:${RESET} $CPU_NAME";;
+    "gpu" | "video_card") info14="GPU:${RESET} $GPU_NAME";;
+    "mem" | "memory" | "ram") info14="Memory:${RESET} ${totram_GB}GB";;
+    "empty") info14="";;
+    *) info14="$INFOLINE14";;
+esac    
+
+case "$INFOLINE15" in
+    "user") info15="$USER@$(hostname)";;
+    "line") info15="-----------------------";;
+    "os") info15="OS:${RESET} $OS_NAME";;
+    "host") info15="Host:${RESET} $(hostname)";;
+    "kernel") info15="Kernel:${RESET} $KERNEL_NAME";;
+    "uptime") info15="Uptime:${RESET} $UPTIME";;
+    "packs" | "packages") info15="Packages:${RESET} $PKG_COUNT";;
+    "shell") info15="Shell:${RESET} $SHELL_NAME";;
+    "resolution") info15="Resolution:${RESET} $MONITOR_RES";;
+    "de" | "desktop_enviroment") info15="DE:${RESET} $DESKTOP_ENV";;
+    "wm" | "window_manager") info15="WM:${RESET} $WINDOW_MANAGER";;
+    "ws" | "window_system") info15="Window system:${RESET} $WINDOW_SYSTEM";;
+    "term" | "terminal") info15="Terminal:${RESET} $TERMINAL";;
+    "cpu" | "processor") info15="CPU:${RESET} $CPU_NAME";;
+    "gpu" | "video_card") info15="GPU:${RESET} $GPU_NAME";;
+    "mem" | "memory" | "ram") info15="Memory:${RESET} ${totram_GB}GB";;
+    "empty") info15="";;
+    *) info15="$INFOLINE15";;
+esac    
 
 # === FIXING LOGO IF NEEDED ===
 len=${#ascii00}
@@ -1277,28 +1646,54 @@ for i in $(seq -w 1 15); do
     fi
 done
 
+# == Color bloks ===
+
+SIZE_BLOX="$COLOR_BLOCK_WIDTH"
+
+if [ "$DISPLAY_COLORS_ROW1" = true ]; then
+
+    COLOR_BLOCKS_ROW_1="$(for color in {0..7}; do
+      code=$((40 + color))
+      echo -en "\e[${code}m${SIZE_BLOX}\e[0m"
+    done
+    echo)"
+else [ "$DISPLAY_COLORS_ROW1" = false ];
+    COLOR_BLOCKS_ROW_1=""
+fi    
+
+if [ "$DISPLAY_COLORS_ROW2" = true ]; then
+
+    COLOR_BLOCKS_ROW_2="$(for color in {0..7}; do
+      code=$((100 + color))
+      echo -en "\e[${code}m${SIZE_BLOX}\e[0m"
+    done
+    echo)"
+else [ "$DISPLAY_COLORS_ROW1" = false ];
+    COLOR_BLOCKS_ROW_2=""
+fi     
+
 # === OUTPUT ===
-line00="${BOLD_A}${COLOR}${ascii00}${RESET}$USER@$(hostname)"
-line01="${BOLD_A}${COLOR}${ascii01}${RESET}-----------------------"
-line02="${BOLD_A}${COLOR}${ascii02}${BOLD}OS:${RESET} $OS_NAME"
-line03="${BOLD_A}${COLOR}${ascii03}${BOLD}Host:${RESET} $(hostname)"
-line04="${BOLD_A}${COLOR}${ascii04}${BOLD}Kernel:${RESET} $KERNEL_NAME"
-line05="${BOLD_A}${COLOR}${ascii05}${BOLD}Uptime:${RESET} $UPTIME"
-line06="${BOLD_A}${COLOR}${ascii06}${BOLD}Packages:${RESET} $PKG_COUNT"
-line07="${BOLD_A}${COLOR}${ascii07}${BOLD}Shell:${RESET} $SHELL_NAME"
-line08="${BOLD_A}${COLOR}${ascii08}${BOLD}Resolution:${RESET} $MONITOR_RES"
-line09="${BOLD_A}${COLOR}${ascii09}${BOLD}DE:${RESET} $DESKTOP_ENV" #Crying
-line10="${BOLD_A}${COLOR}${ascii10}${BOLD}WM:${RESET} $WINDOW_MANAGER"
-line11="${BOLD_A}${COLOR}${ascii11}${BOLD}Window system:${RESET} $WINDOW_SYSTEM"
-line12="${BOLD_A}${COLOR}${ascii12}${BOLD}Terminal:${RESET} $TERMINAL"
-line13="${BOLD_A}${COLOR}${ascii13}${BOLD}CPU:${RESET} $CPU_NAME"
-line14="${BOLD_A}${COLOR}${ascii14}${BOLD}GPU:${RESET} $GPU_NAME"
-line15="${BOLD_A}${COLOR}${ascii15}${BOLD}Memory:${RESET} ${totram_GB}GB"
+line00="${BOLD_A}${COLOR}${ascii00}${RESET}$info00"
+line01="${BOLD_A}${COLOR}${ascii01}${RESET}$info01"
+line02="${BOLD_A}${COLOR}${ascii02}${BOLD}$info02"
+line03="${BOLD_A}${COLOR}${ascii03}${BOLD}$info03"
+line04="${BOLD_A}${COLOR}${ascii04}${BOLD}$info04"
+line05="${BOLD_A}${COLOR}${ascii05}${BOLD}$info05"
+line06="${BOLD_A}${COLOR}${ascii06}${BOLD}$info06"
+line07="${BOLD_A}${COLOR}${ascii07}${BOLD}$info07"
+line08="${BOLD_A}${COLOR}${ascii08}${BOLD}$info08"
+line09="${BOLD_A}${COLOR}${ascii09}${BOLD}$info09" #Crying
+line10="${BOLD_A}${COLOR}${ascii10}${BOLD}$info10"
+line11="${BOLD_A}${COLOR}${ascii11}${BOLD}$info11"
+line12="${BOLD_A}${COLOR}${ascii12}${BOLD}$info12"
+line13="${BOLD_A}${COLOR}${ascii13}${BOLD}$info13"
+line14="${BOLD_A}${COLOR}${ascii14}${BOLD}$info14"
+line15="${BOLD_A}${COLOR}${ascii15}${BOLD}$info15"
 line16="${BOLD_A}${COLOR}${ascii16}"
-line17="${BOLD_A}${COLOR}${ascii17}"
-line18="${BOLD_A}${COLOR}${ascii18}"
+line17="${BOLD_A}${COLOR}${ascii17} $COLOR_BLOCKS_ROW_1"
+line18="${BOLD_A}${COLOR}${ascii18} $COLOR_BLOCKS_ROW_2"
 line19="${BOLD_A}${COLOR}${ascii19}"
-line20="${BOLD}BROKEFETCH 🥀 1.7${RESET}"
+line20="${BOLD}WEALTHFETCH 🌹 1.7${RESET}"
 
 # Loop 00-20 safely
 for i in $(seq 0 20); do
